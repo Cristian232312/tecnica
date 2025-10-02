@@ -1,7 +1,7 @@
 package com.example.pruebaTecnica.service;
 
 import com.example.pruebaTecnica.dto.ClientDTO;
-import com.example.pruebaTecnica.entity.Client;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 

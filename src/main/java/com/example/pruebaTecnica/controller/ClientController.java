@@ -1,8 +1,6 @@
 package com.example.pruebaTecnica.controller;
 
 import com.example.pruebaTecnica.dto.ClientDTO;
-import com.example.pruebaTecnica.entity.Client;
-import com.example.pruebaTecnica.repository.ClientRepository;
 import com.example.pruebaTecnica.service.ClientService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,12 +28,12 @@ public class ClientController {
         return ResponseEntity.ok(clientService.ListClient());
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<ClientDTO> updateClient(@PathVariable Long id, @RequestBody ClientDTO clientDTO) {
         return ResponseEntity.ok(clientService.updateClient(id, clientDTO));
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public void deleteClient(@PathVariable Long id) {
         clientService.deleteClient(id);
     }

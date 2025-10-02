@@ -7,12 +7,14 @@ import com.example.pruebaTecnica.entity.Client;
 import com.example.pruebaTecnica.mapper.ClientMapper;
 import com.example.pruebaTecnica.repository.ClientRepository;
 import com.example.pruebaTecnica.service.ClientService;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+@Service
 public class ClientImpl implements ClientService {
 
     private final ClientRepository clientRepository;
