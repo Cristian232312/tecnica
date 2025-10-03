@@ -1,8 +1,10 @@
 package com.example.pruebaTecnica.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "client")
@@ -10,8 +12,8 @@ public class Client {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private Long id;
+
     private String identificationType;
     private String identificationNumber;
     private String name;
@@ -21,7 +23,12 @@ public class Client {
     private LocalDate dateOfCreate;
     private LocalDate dateOfUpdate;
 
-    public Client(Long id, String identificationType, String identificationNumber, String name, String lastName, String email, LocalDate dateOfBirth, LocalDate dateOfCreate, LocalDate dateOfUpdate) {
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Product> products;
+
+    public Client(Long id, String identificationType, String identificationNumber, String name, String lastName,
+                  String email, LocalDate dateOfBirth, LocalDate dateOfCreate, LocalDate dateOfUpdate, List<Product> products) {
         this.id = id;
         this.identificationType = identificationType;
         this.identificationNumber = identificationNumber;
@@ -31,6 +38,7 @@ public class Client {
         this.dateOfBirth = dateOfBirth;
         this.dateOfCreate = dateOfCreate;
         this.dateOfUpdate = dateOfUpdate;
+        this.products = products;
     }
 
     public Client() {}
@@ -105,5 +113,13 @@ public class Client {
 
     public void setDateOfUpdate(LocalDate dateOfUpdate) {
         this.dateOfUpdate = dateOfUpdate;
+    }
+
+    public List<Product> getProducts() {
+        return products;
+    }
+
+    public void setProducts(List<Product> products) {
+        this.products = products;
     }
 }
