@@ -1,24 +1,37 @@
 package com.example.pruebaTecnica.dto;
 
+import com.example.pruebaTecnica.entity.Enums.AccountStatus;
+import com.example.pruebaTecnica.entity.Enums.AccountType;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public class ProductDTO {
 
-    private String accountType;
+    private Long id;
+    private AccountType accountType;
     private String accountNumber;
-    private String status;
+    private AccountStatus status;
     private BigDecimal balance;
     private Boolean exemptGmf;
     private LocalDate createdAt;
     private LocalDate updatedAt;
     private Long clientId;
 
-    public String getAccountType() {
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public AccountType getAccountType() {
         return accountType;
     }
 
-    public void setAccountType(String accountType) {
+    public void setAccountType(AccountType accountType) {
         this.accountType = accountType;
     }
 
@@ -30,11 +43,11 @@ public class ProductDTO {
         this.accountNumber = accountNumber;
     }
 
-    public String getStatus() {
+    public AccountStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(AccountStatus status) {
         this.status = status;
     }
 

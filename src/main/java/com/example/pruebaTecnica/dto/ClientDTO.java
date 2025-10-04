@@ -1,9 +1,11 @@
 package com.example.pruebaTecnica.dto;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class ClientDTO {
 
+    private Long id;
     private String identificationType;
     private String identificationNumber;
     private String name;
@@ -12,6 +14,15 @@ public class ClientDTO {
     private LocalDate dateOfBirth;
     private LocalDate dateOfCreate;
     private LocalDate dateOfUpdate;
+    private List<ProductDTO> products;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getIdentificationType() {
         return identificationType;
@@ -75,5 +86,13 @@ public class ClientDTO {
 
     public void setDateOfUpdate(LocalDate dateOfUpdate) {
         this.dateOfUpdate = dateOfUpdate;
+    }
+
+    public List<ProductDTO> getProducts() {
+        return products;
+    }
+
+    public void setProducts(List<ProductDTO> products) {
+        this.products = products;
     }
 }
