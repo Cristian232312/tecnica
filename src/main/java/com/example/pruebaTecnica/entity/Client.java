@@ -23,7 +23,7 @@ public class Client {
     private LocalDate dateOfCreate;
     private LocalDate dateOfUpdate;
 
-    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Product> products;
 
