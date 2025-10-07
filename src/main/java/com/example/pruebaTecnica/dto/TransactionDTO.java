@@ -12,6 +12,8 @@ public class TransactionDTO {
     private String destinationAccountNumber;
     private Long productId;
 
+    public TransactionDTO() {}
+
     public Long getId() {
         return id;
     }

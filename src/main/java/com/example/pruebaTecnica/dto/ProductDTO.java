@@ -20,6 +20,8 @@ public class ProductDTO {
     private Long clientId;
     private List<TransactionDTO> transactions;
 
+    public ProductDTO() {}
+
     public Long getId() {
         return id;
     }

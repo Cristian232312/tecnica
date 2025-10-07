@@ -16,6 +16,8 @@ public class ClientDTO {
     private LocalDate dateOfUpdate;
     private List<ProductDTO> products;
 
+    public ClientDTO() {}
+
     public Long getId() {
         return id;
     }

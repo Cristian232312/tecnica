@@ -23,6 +23,7 @@ public class TransactionMapper {
             dto.setAccountNumber(transaction.getProduct().getAccountNumber());
         }
 
+        //este validacion es para que el numero de destino de la transacción se muestre en el json
         if (transaction.getTransactionType().equalsIgnoreCase("transferencia") ||
                 transaction.getTransactionType().equalsIgnoreCase("consignacion")) {
             dto.setDestinationAccountNumber(transaction.getProduct().getAccountNumber());
