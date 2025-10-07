@@ -3,10 +3,12 @@ package com.example.pruebaTecnica.entity;
 import com.example.pruebaTecnica.entity.Enums.AccountStatus;
 import com.example.pruebaTecnica.entity.Enums.AccountType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "Product")
@@ -34,7 +36,12 @@ public class Product {
     @JsonBackReference
     private Client client;
 
-    public Product(Long id, AccountType accountType, String accountNumber, AccountStatus status, BigDecimal balance, Boolean exemptGmf, LocalDate createdAt, LocalDate updatedAt, Client client) {
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Transaction> transactions;
+
+    public Product(Long id, AccountType accountType, String accountNumber, AccountStatus status, BigDecimal balance,
+                   Boolean exemptGmf, LocalDate createdAt, LocalDate updatedAt, Client client, List<Transaction> transactions) {
         this.id = id;
         this.accountType = accountType;
         this.accountNumber = accountNumber;
@@ -44,6 +51,7 @@ public class Product {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.client = client;
+        this.transactions = transactions;
     }
 
     public Product() {}
@@ -118,5 +126,13 @@ public class Product {
 
     public void setClient(Client client) {
         this.client = client;
+    }
+
+    public List<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public void setTransactions(List<Transaction> transactions) {
+        this.transactions = transactions;
     }
 }

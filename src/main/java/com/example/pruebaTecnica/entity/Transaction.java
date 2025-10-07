@@ -1,6 +1,7 @@
 package com.example.pruebaTecnica.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -19,6 +20,7 @@ public class Transaction {
 
     @ManyToOne
     @JoinColumn(name = "product_id")
+    @JsonBackReference
     private Product product;
 
     public Transaction(Long id, String transactionType, BigDecimal amount, LocalDateTime transactionDate, Product product) {

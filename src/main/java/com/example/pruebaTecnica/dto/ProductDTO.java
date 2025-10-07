@@ -5,6 +5,7 @@ import com.example.pruebaTecnica.entity.Enums.AccountType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public class ProductDTO {
 
@@ -17,6 +18,7 @@ public class ProductDTO {
     private LocalDate createdAt;
     private LocalDate updatedAt;
     private Long clientId;
+    private List<TransactionDTO> transactions;
 
     public Long getId() {
         return id;
@@ -88,5 +90,13 @@ public class ProductDTO {
 
     public void setClientId(Long clientId) {
         this.clientId = clientId;
+    }
+
+    public List<TransactionDTO> getTransactions() {
+        return transactions;
+    }
+
+    public void setTransactions(List<TransactionDTO> transactions) {
+        this.transactions = transactions;
     }
 }

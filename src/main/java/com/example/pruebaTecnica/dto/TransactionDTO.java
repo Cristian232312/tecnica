@@ -10,6 +10,7 @@ public class TransactionDTO {
     private LocalDateTime transactionDate;
     private String accountNumber;
     private String destinationAccountNumber;
+    private Long productId;
 
     public Long getId() {
         return id;
@@ -57,5 +58,13 @@ public class TransactionDTO {
 
     public void setDestinationAccountNumber(String destinationAccountNumber) {
         this.destinationAccountNumber = destinationAccountNumber;
+    }
+
+    public Long getProductId() {
+        return productId;
+    }
+
+    public void setProductId(Long productId) {
+        this.productId = productId;
     }
 }

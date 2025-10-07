@@ -17,6 +17,7 @@ public class TransactionMapper {
         dto.setTransactionType(transaction.getTransactionType());
         dto.setAmount(transaction.getAmount());
         dto.setTransactionDate(transaction.getTransactionDate());
+        dto.setProductId(transaction.getProduct().getId());
 
         if (transaction.getProduct() != null) {
             dto.setAccountNumber(transaction.getProduct().getAccountNumber());
