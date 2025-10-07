@@ -14,4 +14,14 @@ public class ErrorMessages {
     public static final String PRODUCT_NOT_FOUND = "Cuenta no encontrada";
     public static final String CANNOT_CANCEL_ACCOUNT_WITH_BALANCE = "No se puede cancelar la cuenta, aun tiene saldo disponible";
     public static final String CANNOT_DELETE_ACCOUNT_WITH_BALANCE = "No se puede eliminar la cuenta, aun tiene saldo disponible";
+    public static final String INVALID_AMOUNT = "El monto debe ser mayor a cero";
+    public static final String ACCOUNT_NUMBER_NOT_FOUND = "No se encontro el numero de cuenta de origen";
+    public static final String ACCOUNT_NOT_ACTIVE = "La cuenta de origen no esta activa";
+    public static final String DESTINATION_ACCOUNT_NUMBER_NOT_FOUND = "No se encontro el numero de cuenta de destino";
+    public static final String DESTINATION_ACCOUNT_NOT_ACTIVE = "La cuenta de destino no esta activa";
+    public static final String CANNOT_TRANSFER_TO_SAME_ACCOUNT = "No puedes transferir a la misma cuenta";
+    public static final String INSUFFICIENT_FUNDS_IN_ORIGIN_ACCOUNT = "Saldo insuficiente en la cuenta de origen";
+    public static final String INVALID_TRANSACTION_TYPE = "La transacción no es valida";
+    public static final String TRANSACTION_NOT_FOUND = "La transacción no existe.";
+
 }

@@ -8,6 +8,8 @@ public class TransactionDTO {
     private String transactionType;
     private BigDecimal amount;
     private LocalDateTime transactionDate;
+    private String accountNumber;
+    private String destinationAccountNumber;
 
     public Long getId() {
         return id;
@@ -39,5 +41,21 @@ public class TransactionDTO {
 
     public void setTransactionDate(LocalDateTime transactionDate) {
         this.transactionDate = transactionDate;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
+    }
+
+    public String getDestinationAccountNumber() {
+        return destinationAccountNumber;
+    }
+
+    public void setDestinationAccountNumber(String destinationAccountNumber) {
+        this.destinationAccountNumber = destinationAccountNumber;
     }
 }
