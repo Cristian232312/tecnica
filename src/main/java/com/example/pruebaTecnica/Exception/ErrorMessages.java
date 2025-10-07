@@ -23,5 +23,5 @@ public class ErrorMessages {
     public static final String INSUFFICIENT_FUNDS_IN_ORIGIN_ACCOUNT = "Saldo insuficiente en la cuenta de origen";
     public static final String INVALID_TRANSACTION_TYPE = "La transacción no es valida";
     public static final String TRANSACTION_NOT_FOUND = "La transacción no existe.";
-
+    public static final String CLIENT_HAS_LINKED_PRODUCTS = "El cliente no puede ser eliminado porque tiene productos asociados.";
 }

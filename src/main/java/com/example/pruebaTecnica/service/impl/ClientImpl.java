@@ -6,6 +6,7 @@ import com.example.pruebaTecnica.dto.ClientDTO;
 import com.example.pruebaTecnica.entity.Client;
 import com.example.pruebaTecnica.mapper.ClientMapper;
 import com.example.pruebaTecnica.repository.ClientRepository;
+import com.example.pruebaTecnica.repository.ProductRepository;
 import com.example.pruebaTecnica.service.ClientService;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +20,12 @@ public class ClientImpl implements ClientService {
 
     private final ClientRepository clientRepository;
     private final ClientMapper clientMapper;
+    private final ProductRepository productRepository;
 
-    public ClientImpl(ClientRepository clientRepository, ClientMapper clientMapper) {
+    public ClientImpl(ClientRepository clientRepository, ClientMapper clientMapper, ProductRepository productRepository) {
         this.clientRepository = clientRepository;
         this.clientMapper = clientMapper;
+        this.productRepository = productRepository;
     }
 
     @Override
@@ -86,6 +89,14 @@ public class ClientImpl implements ClientService {
 
     @Override
     public void deleteClient(Long id) {
+        Client client = clientRepository.findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException(ErrorMessages.CLIENT_NOT_FOUND));
+
+        boolean hasProducts = productRepository.existByClientId(id);
+        if (hasProducts) {
+            throw new IllegalArgumentException(ErrorMessages.CLIENT_HAS_LINKED_PRODUCTS);
+        }
+
         clientRepository.deleteById(id);
     }
 

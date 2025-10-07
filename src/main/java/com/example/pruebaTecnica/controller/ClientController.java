@@ -34,7 +34,12 @@ public class ClientController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteClient(@PathVariable Long id) {
-        clientService.deleteClient(id);
+    public ResponseEntity<String> deleteClient(@PathVariable Long id) {
+        try {
+            clientService.deleteClient(id);
+            return ResponseEntity.ok("Cliente con id "+id+" eliminado correctamente.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

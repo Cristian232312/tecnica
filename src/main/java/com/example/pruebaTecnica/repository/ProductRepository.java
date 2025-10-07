@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    Boolean existsByAccountNumber(String number);
+    boolean existsByAccountNumber(String number);
     Optional<Product> findByAccountNumber(String accountNumber);
+    boolean existByClientId(Long ClientId);
 }
