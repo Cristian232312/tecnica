@@ -32,6 +32,10 @@ public class ClientImpl implements ClientService {
     public ClientDTO createClient(ClientDTO clientDTO) {
         validateClient(clientDTO);
 
+        if (clientRepository.existsByIdentificationNumber(clientDTO.getIdentificationNumber())) {
+            throw new IllegalArgumentException(ErrorMessages.IDENTIFICATION_NUMBER_ALREADY_EXISTS);
+        }
+
         Client client = clientMapper.toEntity(clientDTO);
 
         client.setDateOfCreate(LocalDate.now());
@@ -92,7 +96,7 @@ public class ClientImpl implements ClientService {
         Client client = clientRepository.findById(id)
                         .orElseThrow(() -> new ResourceNotFoundException(ErrorMessages.CLIENT_NOT_FOUND));
 
-        boolean hasProducts = productRepository.existByClientId(id);
+        boolean hasProducts = productRepository.existsByClientId(id);
         if (hasProducts) {
             throw new IllegalArgumentException(ErrorMessages.CLIENT_HAS_LINKED_PRODUCTS);
         }
