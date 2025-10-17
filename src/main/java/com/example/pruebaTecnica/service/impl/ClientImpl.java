@@ -93,8 +93,9 @@ public class ClientImpl implements ClientService {
 
     @Override
     public void deleteClient(Long id) {
-        Client client = clientRepository.findById(id)
-                        .orElseThrow(() -> new ResourceNotFoundException(ErrorMessages.CLIENT_NOT_FOUND));
+        if (!clientRepository.existsById(id)) {
+            throw new ResourceNotFoundException(ErrorMessages.CLIENT_NOT_FOUND);
+        }
 
         boolean hasProducts = productRepository.existsByClientId(id);
         if (hasProducts) {

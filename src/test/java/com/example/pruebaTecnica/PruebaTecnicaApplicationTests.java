@@ -1,194 +1,197 @@
 package com.example.pruebaTecnica;
 
+import com.example.pruebaTecnica.Exception.ErrorMessages;
+import com.example.pruebaTecnica.Exception.ResourceNotFoundException;
 import com.example.pruebaTecnica.dto.ClientDTO;
-import com.example.pruebaTecnica.dto.ProductDTO;
-import com.example.pruebaTecnica.dto.TransactionDTO;
-import com.example.pruebaTecnica.entity.Enums.AccountType;
-import com.example.pruebaTecnica.service.ClientService;
-import com.example.pruebaTecnica.service.ProductService;
-import com.example.pruebaTecnica.service.TransactionService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
+import com.example.pruebaTecnica.entity.Client;
+import com.example.pruebaTecnica.mapper.ClientMapper;
+import com.example.pruebaTecnica.repository.ClientRepository;
+import com.example.pruebaTecnica.repository.ProductRepository;
+import com.example.pruebaTecnica.service.impl.ClientImpl;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class PruebaTecnicaApplicationTests {
 
 	@Mock
-	private ClientService clientService;
+	private ClientRepository clientRepository;
 
 	@Mock
-	private ProductService productService;
+	private ProductRepository productRepository;
 
 	@Mock
-	private TransactionService transactionService;
+	private ClientMapper clientMapper;
 
-	@BeforeEach
-	void setUp() {
-		MockitoAnnotations.openMocks(this);
-	}
-
-	//  CLIENTE TESTS
+	@InjectMocks
+	private ClientImpl clientImpl;
 
 	@Test
-	@DisplayName("Debería crear un cliente correctamente")
 	void testCreateClient() {
+
 		ClientDTO clientDTO = new ClientDTO();
-		clientDTO.setName("Carlos");
-		clientDTO.setLastName("Pérez");
+		clientDTO.setName("Cristian");
+		clientDTO.setLastName("Cadena");
 		clientDTO.setIdentificationNumber("12345");
+		clientDTO.setEmail("cristian@gmail.com");
+		clientDTO.setDateOfBirth(LocalDate.of(1995, 5, 20));
 
-		when(clientService.createClient(any(ClientDTO.class))).thenReturn(clientDTO);
+		Client clientEntity = new Client();
+		clientEntity.setId(1L);
+		clientEntity.setName("Cristian");
+		clientEntity.setLastName("Cadena");
+		clientEntity.setIdentificationNumber("12345");
+		clientEntity.setEmail("cristian@gmail.com");
+		clientEntity.setDateOfBirth(LocalDate.of(1995, 5, 20));
 
-		ClientDTO result = clientService.createClient(clientDTO);
+		Client saved = new Client();
+		saved.setId(1L);
+		saved.setName("Cristian");
+		saved.setLastName("Cadena");
+		saved.setIdentificationNumber("12345");
+		saved.setEmail("cristian@gmail.com");
+		saved.setDateOfBirth(LocalDate.of(1995, 5, 20));
+
+		when(clientMapper.toEntity(clientDTO)).thenReturn(clientEntity);
+		when(clientRepository.save(any(Client.class))).thenReturn(saved);
+		when(clientMapper.toDTO(saved)).thenReturn(clientDTO);
+
+		ClientDTO result = clientImpl.createClient(clientDTO);
 
 		assertNotNull(result);
-		assertEquals("Carlos", result.getName());
-		verify(clientService, times(1)).createClient(clientDTO);
+		assertEquals(clientDTO, result);
+		verify(clientRepository).save(any(Client.class));
 	}
 
 	@Test
-	@DisplayName("Debería listar todos los clientes")
-	void testListClients() {
-		List<ClientDTO> clients = Arrays.asList(new ClientDTO(), new ClientDTO());
-		when(clientService.ListClient()).thenReturn(clients);
+	void testListClient() {
 
-		List<ClientDTO> result = clientService.ListClient();
+		Client client = new Client();
+		client.setId(1L);
+		client.setName("Cristian");
+		client.setIdentificationNumber("12345");
 
-		assertEquals(2, result.size());
-		verify(clientService, times(1)).ListClient();
+		ClientDTO dto = new ClientDTO();
+		dto.setName("Cristian");
+		dto.setIdentificationNumber("12345");
+
+		when(clientRepository.findAll()).thenReturn(List.of(client));
+		when(clientMapper.toDTO(client)).thenReturn(dto);
+
+		List<ClientDTO> result = clientImpl.ListClient();
+
+		assertNotNull(result);
+		assertEquals(1, result.size());
+
+		ClientDTO resultDTO = result.getFirst();
+
+		assertEquals(dto.getName(), resultDTO.getName());
+		assertEquals(dto.getIdentificationNumber(), resultDTO.getIdentificationNumber());
+
+		verify(clientRepository).findAll();
+		verify(clientMapper).toDTO(client);
 	}
 
 	@Test
-	@DisplayName("Debería actualizar un cliente por ID")
 	void testUpdateClient() {
+		Long id = 1L;
+
 		ClientDTO clientDTO = new ClientDTO();
-		clientDTO.setName("Juan");
+		clientDTO.setName("Cristian Actualizado");
+		clientDTO.setLastName("Cadena");
+		clientDTO.setEmail("cristian.actualizado@gmail.com");
+		clientDTO.setDateOfBirth(LocalDate.of(1990, 3, 15));
 
-		when(clientService.updateClient(eq(1L), any(ClientDTO.class))).thenReturn(clientDTO);
+		Client existingClient = new Client();
+		existingClient.setId(id);
+		existingClient.setName("Cristian");
+		existingClient.setLastName("Cadena");
+		existingClient.setIdentificationNumber("12345");
+		existingClient.setEmail("cristian@gmail.com");
+		existingClient.setDateOfBirth(LocalDate.of(1990, 3, 15));
 
-		ClientDTO updated = clientService.updateClient(1L, clientDTO);
+		Client updatedClient = new Client();
+		updatedClient.setId(id);
+		updatedClient.setName("Cristian Actualizado");
+		updatedClient.setLastName("Cadena");
+		updatedClient.setIdentificationNumber("12345");
+		updatedClient.setEmail("cristian.actualizado@gmail.com");
+		updatedClient.setDateOfBirth(LocalDate.of(1990, 3, 15));
 
-		assertEquals("Juan", updated.getName());
-		verify(clientService).updateClient(1L, clientDTO);
-	}
+		ClientDTO updatedDTO = new ClientDTO();
+		updatedDTO.setName("Cristian Actualizado");
+		updatedDTO.setLastName("Cadena");
+		updatedDTO.setIdentificationNumber("12345");
+		updatedDTO.setEmail("cristian.actualizado@gmail.com");
+		updatedDTO.setDateOfBirth(LocalDate.of(1990, 3, 15));
 
-	@Test
-	@DisplayName("Debería eliminar un cliente por ID")
-	void testDeleteClient() {
-		doNothing().when(clientService).deleteClient(1L);
+		when(clientRepository.findById(id)).thenReturn(java.util.Optional.of(existingClient));
+		when(clientRepository.save(any(Client.class))).thenReturn(updatedClient);
+		when(clientMapper.toDTO(updatedClient)).thenReturn(updatedDTO);
 
-		clientService.deleteClient(1L);
-
-		verify(clientService, times(1)).deleteClient(1L);
-	}
-
-	// PRODUCTO TESTS
-
-	@Test
-	@DisplayName("Debería crear un producto correctamente")
-	void testCreateProduct() {
-		ProductDTO productDTO = new ProductDTO();
-		productDTO.setAccountType(AccountType.AHORROS);
-		productDTO.setAccountNumber("5312345678");
-		productDTO.setBalance(BigDecimal.valueOf(5000));
-
-		when(productService.createProduct(any(ProductDTO.class))).thenReturn(productDTO);
-
-		ProductDTO result = productService.createProduct(productDTO);
-
-		assertNotNull(result);
-		assertEquals(AccountType.AHORROS, result.getAccountType());
-		verify(productService).createProduct(productDTO);
-	}
-
-
-	@Test
-	@DisplayName("Debería listar todos los productos")
-	void testListProducts() {
-		List<ProductDTO> products = Arrays.asList(new ProductDTO(), new ProductDTO());
-		when(productService.listProducts()).thenReturn(products);
-
-		List<ProductDTO> result = productService.listProducts();
-
-		assertEquals(2, result.size());
-		verify(productService).listProducts();
-	}
-
-	@Test
-	@DisplayName("Debería actualizar un producto por ID")
-	void testUpdateProduct() {
-		ProductDTO productDTO = new ProductDTO();
-		productDTO.setAccountType(AccountType.CORRIENTE);
-
-		when(productService.updateProduct(eq(2L), any(ProductDTO.class))).thenReturn(productDTO);
-
-		ProductDTO result = productService.updateProduct(2L, productDTO);
+		ClientDTO result = clientImpl.updateClient(id, clientDTO);
 
 		assertNotNull(result);
-		assertEquals(AccountType.CORRIENTE.name(), result.getAccountType().name());
-		verify(productService).updateProduct(2L, productDTO);
+		assertEquals("Cristian Actualizado", result.getName());
+		assertEquals("cristian.actualizado@gmail.com", result.getEmail());
+		verify(clientRepository).findById(id);
+		verify(clientRepository).save(any(Client.class));
+		verify(clientMapper).toDTO(updatedClient);
 	}
 
 	@Test
-	@DisplayName("Debería eliminar un producto por ID")
-	void testDeleteProduct() {
-		doNothing().when(productService).deleteProduct(2L);
+	void testDeleteClient_Success() {
+		Long id = 1L;
 
-		productService.deleteProduct(2L);
+		when(clientRepository.existsById(id)).thenReturn(true);
+		when(productRepository.existsByClientId(id)).thenReturn(false);
 
-		verify(productService).deleteProduct(2L);
-	}
+		clientImpl.deleteClient(id);
 
-	// TRANSACCIÓN TESTS
-
-	@Test
-	@DisplayName("Debería crear una transacción correctamente")
-	void testMakeTransaction() {
-		TransactionDTO transactionDTO = new TransactionDTO();
-		transactionDTO.setTransactionType("CONSIGNACION");
-		transactionDTO.setAmount(BigDecimal.valueOf(1000));
-		transactionDTO.setTransactionDate(LocalDateTime.now());
-
-		when(transactionService.makeTransaction(any(TransactionDTO.class))).thenReturn(transactionDTO);
-
-		TransactionDTO result = transactionService.makeTransaction(transactionDTO);
-
-		assertNotNull(result);
-		assertEquals("CONSIGNACION", result.getTransactionType());
-		verify(transactionService).makeTransaction(transactionDTO);
+		verify(clientRepository).existsById(id);
+		verify(productRepository).existsByClientId(id);
+		verify(clientRepository).deleteById(id);
 	}
 
 	@Test
-	@DisplayName("Debería listar todas las transacciones")
-	void testListTransactions() {
-		List<TransactionDTO> transactions = Arrays.asList(new TransactionDTO(), new TransactionDTO());
-		when(transactionService.listTransaction()).thenReturn(transactions);
+	void testDeleteClient_NotFound() {
+		Long id = 99L;
 
-		List<TransactionDTO> result = transactionService.listTransaction();
+		when(clientRepository.existsById(id)).thenReturn(false);
 
-		assertEquals(2, result.size());
-		verify(transactionService).listTransaction();
+		ResourceNotFoundException exception =
+				assertThrows(ResourceNotFoundException.class, () -> clientImpl.deleteClient(id));
+
+		assertEquals(ErrorMessages.CLIENT_NOT_FOUND, exception.getMessage());
+
+		verify(clientRepository).existsById(id);
+		verify(clientRepository, never()).deleteById(anyLong());
+		verify(productRepository, never()).existsByClientId(anyLong());
 	}
 
 	@Test
-	@DisplayName("Debería eliminar una transacción por ID")
-	void testDeleteTransaction() {
-		doNothing().when(transactionService).deleteTransaction(3L);
+	void testDeleteClient_HasLinkedProducts() {
+		Long id = 2L;
 
-		transactionService.deleteTransaction(3L);
+		when(clientRepository.existsById(id)).thenReturn(true);
+		when(productRepository.existsByClientId(id)).thenReturn(true);
 
-		verify(transactionService).deleteTransaction(3L);
+		IllegalArgumentException exception =
+				assertThrows(IllegalArgumentException.class, () -> clientImpl.deleteClient(id));
+
+		assertEquals(ErrorMessages.CLIENT_HAS_LINKED_PRODUCTS, exception.getMessage());
+
+		verify(clientRepository).existsById(id);
+		verify(productRepository).existsByClientId(id);
+		verify(clientRepository, never()).deleteById(anyLong());
 	}
 }
