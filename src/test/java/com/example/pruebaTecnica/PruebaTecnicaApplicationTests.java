@@ -3,19 +3,33 @@ package com.example.pruebaTecnica;
 import com.example.pruebaTecnica.Exception.ErrorMessages;
 import com.example.pruebaTecnica.Exception.ResourceNotFoundException;
 import com.example.pruebaTecnica.dto.ClientDTO;
+import com.example.pruebaTecnica.dto.ProductDTO;
+import com.example.pruebaTecnica.dto.TransactionDTO;
 import com.example.pruebaTecnica.entity.Client;
+import com.example.pruebaTecnica.entity.Enums.AccountStatus;
+import com.example.pruebaTecnica.entity.Enums.AccountType;
+import com.example.pruebaTecnica.entity.Product;
+import com.example.pruebaTecnica.entity.Transaction;
 import com.example.pruebaTecnica.mapper.ClientMapper;
+import com.example.pruebaTecnica.mapper.ProductMapper;
+import com.example.pruebaTecnica.mapper.TransactionMapper;
 import com.example.pruebaTecnica.repository.ClientRepository;
 import com.example.pruebaTecnica.repository.ProductRepository;
+import com.example.pruebaTecnica.repository.TransactionRepository;
 import com.example.pruebaTecnica.service.impl.ClientImpl;
+import com.example.pruebaTecnica.service.impl.ProductImpl;
+import com.example.pruebaTecnica.service.impl.TransactionImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -30,10 +44,25 @@ class PruebaTecnicaApplicationTests {
 	private ProductRepository productRepository;
 
 	@Mock
+	private TransactionRepository transactionRepository;
+
+	@Mock
 	private ClientMapper clientMapper;
+
+	@Mock
+	private ProductMapper productMapper;
+
+	@Mock
+	private TransactionMapper transactionMapper;
 
 	@InjectMocks
 	private ClientImpl clientImpl;
+
+	@InjectMocks
+	private ProductImpl productImpl;
+
+	@InjectMocks
+	private TransactionImpl transactionImpl;
 
 	@Test
 	void testCreateClient() {
@@ -193,5 +222,296 @@ class PruebaTecnicaApplicationTests {
 		verify(clientRepository).existsById(id);
 		verify(productRepository).existsByClientId(id);
 		verify(clientRepository, never()).deleteById(anyLong());
+	}
+
+	// TESTS DE PRODUCT
+
+	@Test
+	void testCreateProduct_Success() {
+		ProductDTO productDTO = new ProductDTO();
+		productDTO.setClientId(1L);
+		productDTO.setAccountType(AccountType.AHORROS);
+		productDTO.setBalance(BigDecimal.valueOf(50000));
+
+		Client client = new Client();
+		client.setId(1L);
+		client.setName("Cristian");
+
+		Product productEntity = new Product();
+		productEntity.setId(1L);
+		productEntity.setAccountType(AccountType.AHORROS);
+		productEntity.setBalance(BigDecimal.valueOf(50000));
+		productEntity.setClient(client);
+
+		Product saved = new Product();
+		saved.setId(1L);
+		saved.setAccountType(AccountType.AHORROS);
+		saved.setBalance(BigDecimal.valueOf(50000));
+		saved.setClient(client);
+
+		ProductDTO savedDTO = new ProductDTO();
+		savedDTO.setId(1L);
+		savedDTO.setAccountType(AccountType.AHORROS);
+		savedDTO.setBalance(BigDecimal.valueOf(50000));
+
+		when(clientRepository.findById(1L)).thenReturn(Optional.of(client));
+		when(productMapper.toEntity(productDTO)).thenReturn(productEntity);
+		when(productRepository.save(any(Product.class))).thenReturn(saved);
+		when(productMapper.toDTO(saved)).thenReturn(savedDTO);
+
+		ProductDTO result = productImpl.createProduct(productDTO);
+
+		assertNotNull(result);
+		assertEquals(savedDTO.getAccountType(), result.getAccountType());
+		assertEquals(savedDTO.getBalance(), result.getBalance());
+		verify(clientRepository).findById(1L);
+		verify(productRepository).save(any(Product.class));
+	}
+
+	@Test
+	void testCreateProduct_ClientNotFound() {
+		ProductDTO productDTO = new ProductDTO();
+		productDTO.setClientId(99L);
+		productDTO.setAccountType(AccountType.AHORROS);
+		productDTO.setBalance(BigDecimal.valueOf(10000));
+
+		when(clientRepository.findById(99L)).thenReturn(Optional.empty());
+
+		ResourceNotFoundException exception =
+				assertThrows(ResourceNotFoundException.class, () -> productImpl.createProduct(productDTO));
+
+		assertEquals(ErrorMessages.CLIENT_NOT_FOUND, exception.getMessage());
+		verify(clientRepository).findById(99L);
+		verify(productRepository, never()).save(any());
+	}
+
+	@Test
+	void testCreateProduct_NegativeBalanceSavingsAccount() {
+		ProductDTO productDTO = new ProductDTO();
+		productDTO.setClientId(1L);
+		productDTO.setAccountType(AccountType.AHORROS);
+		productDTO.setBalance(BigDecimal.valueOf(-100));
+
+		Client client = new Client();
+		client.setId(1L);
+
+		when(clientRepository.findById(1L)).thenReturn(Optional.of(client));
+
+		IllegalArgumentException exception =
+				assertThrows(IllegalArgumentException.class, () -> productImpl.createProduct(productDTO));
+
+		assertEquals(ErrorMessages.SAVINGS_ACCOUNT_MIN_BALANCE, exception.getMessage());
+	}
+
+	@Test
+	void testUpdateProduct_Success() {
+		Long id = 1L;
+
+		ProductDTO updateDTO = new ProductDTO();
+		updateDTO.setAccountType(AccountType.CORRIENTE);
+		updateDTO.setBalance(BigDecimal.valueOf(300000));
+		updateDTO.setStatus(AccountStatus.ACTIVA);
+
+		Product existing = new Product();
+		existing.setId(id);
+		existing.setAccountType(AccountType.CORRIENTE);
+		existing.setBalance(BigDecimal.valueOf(100000));
+		existing.setStatus(AccountStatus.INACTIVA);
+
+		Product updated = new Product();
+		updated.setId(id);
+		updated.setAccountType(AccountType.CORRIENTE);
+		updated.setBalance(BigDecimal.valueOf(300000));
+		updated.setStatus(AccountStatus.ACTIVA);
+
+		ProductDTO updatedDTO = new ProductDTO();
+		updatedDTO.setId(id);
+		updatedDTO.setAccountType(AccountType.CORRIENTE);
+		updatedDTO.setBalance(BigDecimal.valueOf(300000));
+		updatedDTO.setStatus(AccountStatus.ACTIVA);
+
+		when(productRepository.findById(id)).thenReturn(Optional.of(existing));
+		when(productRepository.save(any(Product.class))).thenReturn(updated);
+		when(productMapper.toDTO(updated)).thenReturn(updatedDTO);
+
+		ProductDTO result = productImpl.updateProduct(id, updateDTO);
+
+		assertNotNull(result);
+		assertEquals(BigDecimal.valueOf(300000), result.getBalance());
+		assertEquals(AccountStatus.ACTIVA, result.getStatus());
+		verify(productRepository).findById(id);
+		verify(productRepository).save(any(Product.class));
+	}
+
+	@Test
+	void testListProducts() {
+		Product product = new Product();
+		product.setId(1L);
+		product.setAccountType(AccountType.AHORROS);
+		product.setBalance(BigDecimal.valueOf(10000));
+
+		ProductDTO dto = new ProductDTO();
+		dto.setId(1L);
+		dto.setAccountType(AccountType.AHORROS);
+		dto.setBalance(BigDecimal.valueOf(10000));
+
+		when(productRepository.findAll()).thenReturn(List.of(product));
+		when(productMapper.toDTO(product)).thenReturn(dto);
+
+		List<ProductDTO> result = productImpl.listProducts();
+
+		assertNotNull(result);
+		assertEquals(1, result.size());
+		assertEquals(dto.getBalance(), result.getFirst().getBalance());
+		verify(productRepository).findAll();
+		verify(productMapper).toDTO(product);
+	}
+
+	@Test
+	void testDeleteProduct_Success() {
+		Long id = 1L;
+
+		Product product = new Product();
+		product.setId(id);
+		product.setBalance(BigDecimal.ZERO);
+
+		when(productRepository.findById(id)).thenReturn(Optional.of(product));
+
+		productImpl.deleteProduct(id);
+
+		verify(productRepository).findById(id);
+		verify(productRepository).deleteById(id);
+	}
+
+	@Test
+	void testMakeTransaction_Retiro() {
+		TransactionDTO dto = new TransactionDTO();
+		dto.setTransactionType("retiro");
+		dto.setAccountNumber("12345");
+		dto.setAmount(BigDecimal.valueOf(200));
+
+		Product origin = new Product();
+		origin.setAccountNumber("12345");
+		origin.setBalance(BigDecimal.valueOf(500));
+		origin.setStatus(AccountStatus.ACTIVA);
+
+		Transaction entity = new Transaction();
+		Transaction saved = new Transaction();
+		TransactionDTO expected = new TransactionDTO();
+
+		when(productRepository.findByAccountNumber("12345")).thenReturn(Optional.of(origin));
+		when(transactionMapper.toEntity(dto)).thenReturn(entity);
+		when(transactionRepository.save(any(Transaction.class))).thenReturn(saved);
+		when(transactionMapper.toDTO(saved)).thenReturn(expected);
+
+		TransactionDTO result = transactionImpl.makeTransaction(dto);
+
+		assertNotNull(result);
+		verify(productRepository).save(origin);
+		verify(transactionRepository).save(entity);
+	}
+
+	@Test
+	void testMakeTransaction_Consignacion() {
+		TransactionDTO dto = new TransactionDTO();
+		dto.setTransactionType("consignacion");
+		dto.setDestinationAccountNumber("9999");
+		dto.setAmount(BigDecimal.valueOf(300));
+
+		Product destination = new Product();
+		destination.setAccountNumber("9999");
+		destination.setBalance(BigDecimal.valueOf(100));
+		destination.setStatus(AccountStatus.ACTIVA);
+
+		Transaction entity = new Transaction();
+		Transaction saved = new Transaction();
+		TransactionDTO expected = new TransactionDTO();
+
+		when(productRepository.findByAccountNumber("9999")).thenReturn(Optional.of(destination));
+		when(transactionMapper.toEntity(dto)).thenReturn(entity);
+		when(transactionRepository.save(any(Transaction.class))).thenReturn(saved);
+		when(transactionMapper.toDTO(saved)).thenReturn(expected);
+
+		TransactionDTO result = transactionImpl.makeTransaction(dto);
+
+		assertNotNull(result);
+		verify(productRepository).save(destination);
+		verify(transactionRepository).save(entity);
+	}
+
+	@Test
+	void testMakeTransaction_Transferencia() {
+		TransactionDTO dto = new TransactionDTO();
+		dto.setTransactionType("transferencia");
+		dto.setAccountNumber("1111");
+		dto.setDestinationAccountNumber("2222");
+		dto.setAmount(BigDecimal.valueOf(150));
+
+		Product origin = new Product();
+		origin.setAccountNumber("1111");
+		origin.setBalance(BigDecimal.valueOf(500));
+		origin.setStatus(AccountStatus.ACTIVA);
+
+		Product destination = new Product();
+		destination.setAccountNumber("2222");
+		destination.setBalance(BigDecimal.valueOf(100));
+		destination.setStatus(AccountStatus.ACTIVA);
+
+		Transaction entity = new Transaction();
+		Transaction saved = new Transaction();
+		TransactionDTO expected = new TransactionDTO();
+
+		when(productRepository.findByAccountNumber("1111")).thenReturn(Optional.of(origin));
+		when(productRepository.findByAccountNumber("2222")).thenReturn(Optional.of(destination));
+		when(transactionMapper.toEntity(dto)).thenReturn(entity);
+		when(transactionRepository.save(any(Transaction.class))).thenReturn(saved);
+		when(transactionMapper.toDTO(saved)).thenReturn(expected);
+
+		TransactionDTO result = transactionImpl.makeTransaction(dto);
+
+		assertNotNull(result);
+		verify(productRepository, times(1)).save(origin);
+		verify(productRepository, times(1)).save(destination);
+		verify(transactionRepository).save(entity);
+	}
+
+	@Test
+	void testMakeTransaction_InvalidAmount() {
+		TransactionDTO dto = new TransactionDTO();
+		dto.setTransactionType("retiro");
+		dto.setAmount(BigDecimal.ZERO);
+
+		assertThrows(IllegalArgumentException.class, () -> transactionImpl.makeTransaction(dto));
+	}
+
+	@Test
+	void testListTransaction() {
+		Transaction transaction = new Transaction();
+		transaction.setTransactionDate(LocalDateTime.now());
+
+		TransactionDTO dto = new TransactionDTO();
+
+		when(transactionRepository.findAll()).thenReturn(List.of(transaction));
+		when(transactionMapper.toDTO(transaction)).thenReturn(dto);
+
+		List<TransactionDTO> result = transactionImpl.listTransaction();
+
+		assertNotNull(result);
+		assertEquals(1, result.size());
+		verify(transactionRepository).findAll();
+		verify(transactionMapper).toDTO(transaction);
+	}
+
+	@Test
+	void testDeleteTransaction_Success() {
+		Long id = 1L;
+		Transaction transaction = new Transaction();
+		transaction.setId(id);
+
+		when(transactionRepository.findById(id)).thenReturn(Optional.of(transaction));
+
+		transactionImpl.deleteTransaction(id);
+
+		verify(transactionRepository).deleteById(id);
 	}
 }
