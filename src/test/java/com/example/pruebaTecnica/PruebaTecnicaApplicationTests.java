@@ -65,7 +65,7 @@ class PruebaTecnicaApplicationTests {
 	private TransactionImpl transactionImpl;
 
 	@Test
-	void testCreateClient() {
+	public void testCreateClient() {
 
 		ClientDTO clientDTO = new ClientDTO();
 		clientDTO.setName("Cristian");
@@ -102,7 +102,26 @@ class PruebaTecnicaApplicationTests {
 	}
 
 	@Test
-	void testListClient() {
+	public void testCreateClient_verifyIdentificationNumberAlreadyExist() {
+		ClientDTO clientDTO = new ClientDTO();
+		clientDTO.setName("Cristian");
+		clientDTO.setLastName("Cadena");
+		clientDTO.setIdentificationNumber("12345");
+		clientDTO.setEmail("cristian@gmail.com");
+		clientDTO.setDateOfBirth(LocalDate.of(1995, 5, 20));
+
+		when(clientRepository.existsByIdentificationNumber("12345")).thenReturn(true);
+
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,() -> {
+			clientImpl.createClient(clientDTO);
+		});
+
+		assertEquals(ErrorMessages.IDENTIFICATION_NUMBER_ALREADY_EXISTS, exception.getMessage());
+		verify(clientRepository, never()).save(any(Client.class));
+	}
+
+	@Test
+	public void testListClient() {
 
 		Client client = new Client();
 		client.setId(1L);
@@ -131,54 +150,71 @@ class PruebaTecnicaApplicationTests {
 	}
 
 	@Test
-	void testUpdateClient() {
+	public void testUpdateClient_invalidName_shouldThrowException() {
 		Long id = 1L;
 
 		ClientDTO clientDTO = new ClientDTO();
-		clientDTO.setName("Cristian Actualizado");
+		clientDTO.setName("");
 		clientDTO.setLastName("Cadena");
-		clientDTO.setEmail("cristian.actualizado@gmail.com");
+		clientDTO.setEmail("cristian@gmail.com");
+		clientDTO.setDateOfBirth(LocalDate.of(1990, 3, 15));
+
+		IllegalArgumentException exception = assertThrows(
+				IllegalArgumentException.class,
+				() -> clientImpl.updateClient(id, clientDTO)
+		);
+
+		assertEquals(ErrorMessages.NAME_MIN_LENGTH_REQUIRED, exception.getMessage());
+		verify(clientRepository, never()).save(any());
+	}
+
+	@Test
+	public void testUpdateClient_invalidEmail_shouldThrowException() {
+		Long id = 1L;
+
+		ClientDTO clientDTO = new ClientDTO();
+		clientDTO.setName("Cristian");
+		clientDTO.setLastName("Cadena");
+		clientDTO.setEmail("correo_invalido");
+		clientDTO.setDateOfBirth(LocalDate.of(1990, 3, 15));
+
+		IllegalArgumentException exception = assertThrows(
+				IllegalArgumentException.class,
+				() -> clientImpl.updateClient(id, clientDTO)
+		);
+
+		assertEquals(ErrorMessages.EMAIL_INVALID_FORMAT, exception.getMessage());
+		verify(clientRepository, never()).save(any());
+	}
+
+	@Test
+	public void testUpdateClient_withValidValues() {
+		Long id = 1L;
+
+		ClientDTO clientDTO = new ClientDTO();
+		clientDTO.setIdentificationType("CC");
+		clientDTO.setIdentificationNumber("12345");
+		clientDTO.setName("Cristian");
+		clientDTO.setLastName("Cadena");
+		clientDTO.setEmail("cristian@gmail.com");
 		clientDTO.setDateOfBirth(LocalDate.of(1990, 3, 15));
 
 		Client existingClient = new Client();
 		existingClient.setId(id);
-		existingClient.setName("Cristian");
-		existingClient.setLastName("Cadena");
-		existingClient.setIdentificationNumber("12345");
-		existingClient.setEmail("cristian@gmail.com");
-		existingClient.setDateOfBirth(LocalDate.of(1990, 3, 15));
 
-		Client updatedClient = new Client();
-		updatedClient.setId(id);
-		updatedClient.setName("Cristian Actualizado");
-		updatedClient.setLastName("Cadena");
-		updatedClient.setIdentificationNumber("12345");
-		updatedClient.setEmail("cristian.actualizado@gmail.com");
-		updatedClient.setDateOfBirth(LocalDate.of(1990, 3, 15));
+		when(clientRepository.findById(id)).thenReturn(Optional.of(existingClient));
+		when(clientRepository.save(any(Client.class))).thenReturn(existingClient);
+		when(clientMapper.toDTO(any(Client.class))).thenReturn(new ClientDTO());
 
-		ClientDTO updatedDTO = new ClientDTO();
-		updatedDTO.setName("Cristian Actualizado");
-		updatedDTO.setLastName("Cadena");
-		updatedDTO.setIdentificationNumber("12345");
-		updatedDTO.setEmail("cristian.actualizado@gmail.com");
-		updatedDTO.setDateOfBirth(LocalDate.of(1990, 3, 15));
+		clientImpl.updateClient(id, clientDTO);
 
-		when(clientRepository.findById(id)).thenReturn(java.util.Optional.of(existingClient));
-		when(clientRepository.save(any(Client.class))).thenReturn(updatedClient);
-		when(clientMapper.toDTO(updatedClient)).thenReturn(updatedDTO);
-
-		ClientDTO result = clientImpl.updateClient(id, clientDTO);
-
-		assertNotNull(result);
-		assertEquals("Cristian Actualizado", result.getName());
-		assertEquals("cristian.actualizado@gmail.com", result.getEmail());
-		verify(clientRepository).findById(id);
-		verify(clientRepository).save(any(Client.class));
-		verify(clientMapper).toDTO(updatedClient);
+		assertEquals("CC", existingClient.getIdentificationType());
+		assertEquals("12345", existingClient.getIdentificationNumber());
+		verify(clientRepository).save(existingClient);
 	}
 
 	@Test
-	void testDeleteClient_Success() {
+	public void testDeleteClient_Success() {
 		Long id = 1L;
 
 		when(clientRepository.existsById(id)).thenReturn(true);
@@ -192,7 +228,7 @@ class PruebaTecnicaApplicationTests {
 	}
 
 	@Test
-	void testDeleteClient_NotFound() {
+	public void testDeleteClient_NotFound() {
 		Long id = 99L;
 
 		when(clientRepository.existsById(id)).thenReturn(false);
@@ -208,7 +244,7 @@ class PruebaTecnicaApplicationTests {
 	}
 
 	@Test
-	void testDeleteClient_HasLinkedProducts() {
+	public void testDeleteClient_HasLinkedProducts() {
 		Long id = 2L;
 
 		when(clientRepository.existsById(id)).thenReturn(true);
@@ -227,7 +263,7 @@ class PruebaTecnicaApplicationTests {
 	// TESTS DE PRODUCT
 
 	@Test
-	void testCreateProduct_Success() {
+	public void testCreateProduct_Success() {
 		ProductDTO productDTO = new ProductDTO();
 		productDTO.setClientId(1L);
 		productDTO.setAccountType(AccountType.AHORROS);
@@ -269,7 +305,7 @@ class PruebaTecnicaApplicationTests {
 	}
 
 	@Test
-	void testCreateProduct_ClientNotFound() {
+	public void testCreateProduct_ClientNotFound() {
 		ProductDTO productDTO = new ProductDTO();
 		productDTO.setClientId(99L);
 		productDTO.setAccountType(AccountType.AHORROS);
@@ -286,7 +322,7 @@ class PruebaTecnicaApplicationTests {
 	}
 
 	@Test
-	void testCreateProduct_NegativeBalanceSavingsAccount() {
+	public void testCreateProduct_NegativeBalanceSavingsAccount() {
 		ProductDTO productDTO = new ProductDTO();
 		productDTO.setClientId(1L);
 		productDTO.setAccountType(AccountType.AHORROS);
@@ -304,7 +340,7 @@ class PruebaTecnicaApplicationTests {
 	}
 
 	@Test
-	void testUpdateProduct_Success() {
+	public void testUpdateProduct_Success() {
 		Long id = 1L;
 
 		ProductDTO updateDTO = new ProductDTO();
@@ -344,7 +380,7 @@ class PruebaTecnicaApplicationTests {
 	}
 
 	@Test
-	void testListProducts() {
+	public void testListProducts() {
 		Product product = new Product();
 		product.setId(1L);
 		product.setAccountType(AccountType.AHORROS);
@@ -368,7 +404,7 @@ class PruebaTecnicaApplicationTests {
 	}
 
 	@Test
-	void testDeleteProduct_Success() {
+	public void testDeleteProduct_Success() {
 		Long id = 1L;
 
 		Product product = new Product();
@@ -384,7 +420,7 @@ class PruebaTecnicaApplicationTests {
 	}
 
 	@Test
-	void testMakeTransaction_Retiro() {
+	public void testMakeTransaction_Retiro() {
 		TransactionDTO dto = new TransactionDTO();
 		dto.setTransactionType("retiro");
 		dto.setAccountNumber("12345");
@@ -412,7 +448,7 @@ class PruebaTecnicaApplicationTests {
 	}
 
 	@Test
-	void testMakeTransaction_Consignacion() {
+	public void testMakeTransaction_Consignacion() {
 		TransactionDTO dto = new TransactionDTO();
 		dto.setTransactionType("consignacion");
 		dto.setDestinationAccountNumber("9999");
@@ -440,7 +476,7 @@ class PruebaTecnicaApplicationTests {
 	}
 
 	@Test
-	void testMakeTransaction_Transferencia() {
+	public void testMakeTransaction_Transferencia() {
 		TransactionDTO dto = new TransactionDTO();
 		dto.setTransactionType("transferencia");
 		dto.setAccountNumber("1111");
@@ -476,7 +512,30 @@ class PruebaTecnicaApplicationTests {
 	}
 
 	@Test
-	void testMakeTransaction_InvalidAmount() {
+	void testCreateTransaction_Transferencia_DestinationAccountNull() {
+		TransactionDTO transactionDTO = new TransactionDTO();
+		transactionDTO.setTransactionType("transferencia");
+		transactionDTO.setAmount(BigDecimal.valueOf(100));
+		transactionDTO.setAccountNumber("123");
+		transactionDTO.setDestinationAccountNumber("456");
+
+		Product originAccount = new Product();
+		originAccount.setAccountNumber("123");
+		originAccount.setBalance(BigDecimal.valueOf(500));
+		originAccount.setStatus(AccountStatus.ACTIVA);
+
+		when(productRepository.findByAccountNumber("123"))
+				.thenReturn(Optional.of(originAccount));
+		when(productRepository.findByAccountNumber("456"))
+				.thenReturn(Optional.empty());
+
+		assertThrows(ResourceNotFoundException.class, () -> {
+			transactionImpl.makeTransaction(transactionDTO);
+		});
+	}
+
+	@Test
+	public void testMakeTransaction_InvalidAmount() {
 		TransactionDTO dto = new TransactionDTO();
 		dto.setTransactionType("retiro");
 		dto.setAmount(BigDecimal.ZERO);
@@ -485,7 +544,7 @@ class PruebaTecnicaApplicationTests {
 	}
 
 	@Test
-	void testListTransaction() {
+	public void testListTransaction() {
 		Transaction transaction = new Transaction();
 		transaction.setTransactionDate(LocalDateTime.now());
 
@@ -503,7 +562,7 @@ class PruebaTecnicaApplicationTests {
 	}
 
 	@Test
-	void testDeleteTransaction_Success() {
+	public void testDeleteTransaction_Success() {
 		Long id = 1L;
 		Transaction transaction = new Transaction();
 		transaction.setId(id);
